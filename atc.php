@@ -34,10 +34,9 @@
     $output_table = '<table border="1" cellpadding="2">';
     $sup_table = '<table>';
 
-    $output_table = $output_table . '<tr> <td width = 130><b>Station</b></td> <td width = 130><b>Frequency&nbsp;&nbsp;</b></td> <td width = 200><b>Position name</b></td> <td width = 200><b>Controller</b></td> <td><b>Online since</b></td> </tr>';
+    $output_table = $output_table . '<tr> <td width = 130><b>Station</b></td> <td width = 110><b>Frequency&nbsp;&nbsp;</b></td> <td width = 200><b>Position name</b></td> <td width = 200><b>Controller</b></td> <td><b>Online since</b></td> </tr>';
 
     // future feature: have different tables for each position type
-
 
     $position_types = array('control','center', 'centre', 'radar', 'approach', 'departure', 'director', 'arrival', 'tower', 'ground', 'delivery', 'clearance');
 
@@ -58,8 +57,8 @@
                 $position_name = $station['atis_message'];
                 $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 3));
 
-                // exception for two-worded city names
-                $los_las_cities = array('los', 'las', 'hong');
+                // exception for two-worded city names, as well as controllers who prefix the callsign with "Callsign"
+                $los_las_cities = array('los', 'las', 'hong', 'callsign');
                 $pos_lowercase = strtolower($position_name);
                 if (contains_word($pos_lowercase, $los_las_cities) === false)
                     $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 2));
@@ -73,6 +72,10 @@
             /**** Determine the station name ****/
 
             $pos_name_lowercase = strtolower($position_name);
+
+            // remove the word "callsign" if it exists
+            if (contains_word($pos_name_lowercase, array('callsign')))
+                $position_name = strstr($position_name, ' ');
 
             if (contains_word($pos_name_lowercase, $position_types))
                 $output_table = $output_table . '<td>' . $position_name . '</td>';
