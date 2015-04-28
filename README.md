@@ -8,7 +8,7 @@ A deployed, publicly accessible version will be available soon.
 
 ###atc.php
 
-Displays online ATC stations on the VATSIM network.
+Displays online ATC stations on the VATSIM network, as well as some basic information about each.
 
 ###config.php
 
