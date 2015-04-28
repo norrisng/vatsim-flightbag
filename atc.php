@@ -67,7 +67,7 @@
                 }
 
                 // Please excuse the ridiculously long regex and blame places such as Munich, Sondrestrom etc.
-                $position_name = preg_replace("/[^ \w]+/ÀÁÅÃÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ", "", $position_name);
+                $position_name = preg_replace("/[^ \wÀÁÅÃÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]+/", "", $position_name);
 //
 //                // get the first 3 words of the atis_message, which will likely contain the station callsign
 //                $position_name_pieces = array_slice(explode(' ', $position_name), 0, 3);
