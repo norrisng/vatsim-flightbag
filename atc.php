@@ -10,8 +10,6 @@
     <p class = "smalltext"><a href="fltsim_resource.html">&lt; Return to menu</a></p>
 </p>
 
-<p class = smalltext><b>ATC stations currently online &nbsp;[<a href = "atc.php">refresh</a>]</b></p>
-
 <?php
 
 /**
@@ -31,10 +29,12 @@
 
     $online_atc = json_decode($online_atc_json, true);
 
+    $num_online = 0;
+
     $output_table = '<table border="1" cellpadding="2">';
     $sup_table = '<table>';
 
-    $output_table = $output_table . '<tr> <td width = 130><b>Station</b></td> <td width = 110><b>Frequency&nbsp;&nbsp;</b></td> <td width = 200><b>Position name</b></td> <td width = 200><b>Controller</b></td> <td><b>Online since</b></td> </tr>';
+    $output_table = $output_table . '<tr> <td width = 130><b>Station</b></td> <td width = 110><b>Frequency&nbsp;&nbsp;</b></td> <td width = 200><b>Callsign</b></td> <td width = 200><b>Controller</b></td> <td><b>Online since</b></td> </tr>';
 
     // future feature: have different tables for each position type
 
@@ -54,14 +54,35 @@
             // exception handling in case 'atis_message' doesn't exist for some odd reason
             if (array_key_exists('atis_message', $station) === true) {
 
-                $position_name = $station['atis_message'];
+                // strip the word "charts"; it seems to be a common word that escapes subsequent filters
+                $position_name = str_replace('charts', '', $station['atis_message']);
+                $position_name = str_replace('Charts', '', $station['atis_message']);
+
+
+
+                // strip all punctuation and <br/> tags
+                if (strpos($position_name, "<br />")) {
+                    $position_name = remove_after_word($position_name, "<br />");
+                    $position_name = str_replace("<br /", '', $position_name);
+                }
+
+                // Please excuse the ridiculously long regex and blame places such as Munich, Sondrestrom etc.
+                $position_name = preg_replace("/[^ \w]+/ÀÁÅÃÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ", "", $position_name);
+//
+//                // get the first 3 words of the atis_message, which will likely contain the station callsign
+//                $position_name_pieces = array_slice(explode(' ', $position_name), 0, 3);
+//
+//                // figure out if the last word is one of the ones in position_type; if so, then
+//                if (strcmp($position_name_pieces, $position_name_pieces[2]))
+//                    ;
                 $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 3));
 
-                // exception for two-worded city names, as well as controllers who prefix the callsign with "Callsign"
-                $los_las_cities = array('los', 'las', 'hong', 'callsign');
+                // exception for some two-worded city names, as well as controllers who prefix the callsign with "Callsign"
+                $two_word_cities = array('los', 'las', 'hong', 'de', 'callsign');
                 $pos_lowercase = strtolower($position_name);
-                if (contains_word($pos_lowercase, $los_las_cities) === false)
+                if (contains_word($pos_lowercase, $two_word_cities) === false)
                     $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 2));
+
             }
             else $position_name = '';
 
@@ -88,6 +109,7 @@
                 $output_table = $output_table . '<td>' . $login_time . '</td>';
             $output_table = $output_table . '</tr>';
 
+            $num_online++;
         }
         else if (strpos($freq, '199.998') === true and strcomp($rating, 'Supervisor') === 0) {
 
@@ -101,6 +123,12 @@
     }
 
 
+?>
+
+<p class = smalltext><b>ATC stations currently online:</b> <?php echo $num_online ?> &nbsp;<b>[<a href = "atc.php">refresh</a>]</b></p>
+
+<?php
+
     $output_table = $output_table . '</table>';
     $sup_table = $sup_table . '</table>';
 
@@ -108,13 +136,11 @@
 
     echo '
 
-';
+    ';
 
-//    echo '<p><b>Supervisors currently online</b></p>';
+    //    echo '<p><b>Supervisors currently online</b></p>';
 
-    echo '
-
-';
+    //    echo '<b class = smalltext>ATC positions online:</b> ' . $num_online;
 
     echo $sup_table;
 

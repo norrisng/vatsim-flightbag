@@ -14,4 +14,13 @@
         return false;
     }
 
+    function remove_after_word($str, $remove_this) {
+
+        $pos = strpos($str, $remove_this);
+        $endpoint = $pos + strlen($remove_this);
+        $newStr = substr($str,0,$endpoint );
+
+        return $newStr;
+    }
+
 ?>
