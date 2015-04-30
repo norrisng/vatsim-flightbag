@@ -34,7 +34,15 @@
     $output_table = '<table border="1" cellpadding="2">';
     $sup_table = '<table>';
 
-    $output_table = $output_table . '<tr> <td width = 130><b>Station</b></td> <td width = 110><b>Frequency&nbsp;&nbsp;</b></td> <td width = 200><b>Callsign</b></td> <td width = 200><b>Controller</b></td> <td><b>Online since</b></td> </tr>';
+    // column titles
+    $output_table = $output_table . '<tr>
+                                        <td width = 130><b>Station</b></td>
+                                        <td width = 110><b>Frequency&nbsp;&nbsp;</b></td>
+                                        <td width = 250><b>Callsign</b></td>
+                                        <td width = 250><b>Controller</b></td>
+                                        <td width = 200><b>Online since</b></td>
+                                        <td><b>Time online</b>
+                                    </tr>';
 
     // future feature: have different tables for each position type
 
@@ -47,6 +55,10 @@
             $freq = $station['frequency'];
             $name = $station['name'];
             $login_time = $station['online_since'];
+
+            // format the login time a little better
+            $login_time_unix = strtotime(preg_replace("/\d\d\d\d(-)\d\d(-)\d\d(T)/", "", $login_time));
+            $login_time = str_replace('T',' at ',$login_time);
 
         // don't add atc station if it's an ATIS, or an observer (who all have freq = 199.998)
         if (strpos($callsign, '_ATIS') === false and strpos($freq, '199.998') === false and strpos($rating, 'OBS') === false) {
@@ -101,8 +113,30 @@
 
             /**** Fin ****/
 
+
                 $output_table = add_cell($output_table, $name);
                 $output_table = add_cell($output_table, $login_time);
+
+
+            /** Determine time online***/
+
+            $seconds_online = time() - $login_time_unix;
+
+            // not dealing with days because, seriously, who the hell controls airspace for more than a day?!
+            $hours_online = floor($seconds_online / 3600);     //60^2 seconds in an hour
+            $minutes_online = floor($seconds_online / 60) - 60 * $hours_online;
+
+            // hours sometimes ends up being negative......shitty handling for this case
+            if ($hours_online < 0)
+                $hours_online = $hours_online + 24;
+
+            // not using helper method due to needing the <td align = center>
+            $output_table = $output_table . '<td align = center>' . $hours_online . ':' . $minutes_online . '</td>';
+//            $output_table = add_cell($output_table, $hours_online . ':' . $minutes_online);
+
+            /** Fin **/
+
+
             $output_table = $output_table . '</tr>';
 
             $num_online++;

@@ -39,7 +39,9 @@
         $table = $table . '</tr>';
     }
 
+
     function add_cell($table, $string) {
+
         $table = $table . '<td>' . $string . '</td>';
         return $table;
     }
