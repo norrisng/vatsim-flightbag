@@ -38,7 +38,7 @@
 
     // future feature: have different tables for each position type
 
-    $position_types = array('control','center', 'centre', 'radar', 'approach', 'departure', 'director', 'arrival', 'tower', 'ground', 'delivery', 'clearance');
+    $position_types = array('control','center', 'centre', 'radar', 'approach', 'departure', 'director', 'arrival', 'tower', 'ground', 'delivery', 'clearance', 'terminal');
 
     foreach($online_atc as $station) {
 
@@ -54,13 +54,13 @@
             // exception handling in case 'atis_message' doesn't exist for some odd reason
             if (array_key_exists('atis_message', $station) === true) {
 
-                // strip the word "charts"; it seems to be a common word that escapes subsequent filters
-                $position_name = str_replace('charts', '', $station['atis_message']);
+                $position_name = str_replace('charts', '', $station['atis_message']);   // strip the word "charts"; it seems to be a common word that escapes subsequent filters
                 $position_name = str_replace('Charts', '', $station['atis_message']);
+                $position_name = str_replace("\\s", '', $position_name);
+                $position_name = str_replace("providing", '', $position_name);      // Seattle likes to start their msg's with "Providing xxx services at...."
+                $position_name = str_replace("Providing", '', $position_name);      // TODO: "Tower" still appears in the final result
 
-
-
-                // strip all punctuation and <br/> tags
+                // strip all punctuation and <br/> tags, as well as escaped quotation marks
                 if (strpos($position_name, "<br />")) {
                     $position_name = remove_after_word($position_name, "<br />");
                     $position_name = str_replace("<br /", '', $position_name);
@@ -68,17 +68,13 @@
 
                 // Please excuse the ridiculously long regex and blame places such as Munich, Sondrestrom etc.
                 $position_name = preg_replace("/[^ \wÀÁÅÃÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ]+/", "", $position_name);
-//
-//                // get the first 3 words of the atis_message, which will likely contain the station callsign
-//                $position_name_pieces = array_slice(explode(' ', $position_name), 0, 3);
-//
-//                // figure out if the last word is one of the ones in position_type; if so, then
-//                if (strcmp($position_name_pieces, $position_name_pieces[2]))
-//                    ;
+
+                // get rid of everything except for the first three words, which will likely contain the station callsign
                 $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 3));
 
                 // exception for some two-worded city names, as well as controllers who prefix the callsign with "Callsign"
-                $two_word_cities = array('los', 'las', 'hong', 'de', 'callsign');
+                // TODO: implement a more general regex-based solution
+                $two_word_cities = array('los', 'las', 'hong', 'de', 'callsign', 'saint', 'santa');
                 $pos_lowercase = strtolower($position_name);
                 if (contains_word($pos_lowercase, $two_word_cities) === false)
                     $position_name = implode(' ', array_slice(explode(' ', $position_name), 0, 2));
@@ -87,8 +83,8 @@
             else $position_name = '';
 
             $output_table = $output_table . '<tr>';
-                $output_table = $output_table . '<td>' . $callsign . '</td>';
-                $output_table = $output_table . '<td>' . $freq . '</td>';
+                $output_table = add_cell($output_table, $callsign);
+                $output_table = add_cell($output_table, $freq);
 
             /**** Determine the station name ****/
 
@@ -99,14 +95,14 @@
                 $position_name = strstr($position_name, ' ');
 
             if (contains_word($pos_name_lowercase, $position_types))
-                $output_table = $output_table . '<td>' . $position_name . '</td>';
+                $output_table = add_cell($output_table, $position_name);
             else
-                $output_table = $output_table . '<td>' . '<i><font color = gray>-</font></i>' . '</td>';
+                $output_table = add_cell($output_table, '<font color = gray> &nbsp;- </font>');
 
             /**** Fin ****/
 
-                $output_table = $output_table . '<td>' . $name . '</td>';
-                $output_table = $output_table . '<td>' . $login_time . '</td>';
+                $output_table = add_cell($output_table, $name);
+                $output_table = add_cell($output_table, $login_time);
             $output_table = $output_table . '</tr>';
 
             $num_online++;
