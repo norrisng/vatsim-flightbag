@@ -37,6 +37,12 @@
     $airport = $_POST['airport'];
     $metar_string = file_get_contents('http://metar.vatsim.net/metar.php?id=' . $airport);
 
+    $airport_info_raw = file_get_contents('http://www.airport-data.com/api/ap_info.json?icao=' . $airport);
+    $airport_info = json_decode($airport_info_raw, true);
+
+    $airport_name = '';
+    if ($airport_info['status'] === '200')
+        $airport_name = $airport_info['name'];
 
     $pressure_setting = '';
     preg_match("/[AQ]\d\d\d\d/", $metar_string, $pressure_setting);
@@ -107,6 +113,12 @@
 <p>&nbsp;</p>
 
 <table style="width:100%" class = content>
+    <tr>
+        <td><?php echo 'METAR for ' . $airport_info['name'] . ':'; ?></td>
+    </tr>
+    <tr>
+        <td><p></p></td>
+    </tr>
     <tr>
         <td><b>Issued</b></td>
         <td><b>Pressure setting</b></td>
