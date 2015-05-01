@@ -1,10 +1,8 @@
-<style type="text/css">
-
-    .smalltext {
-        font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
-    }
-
-</style>
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="icon" href="https://dl.dropboxusercontent.com/u/18938199/elato.duckdns.org/icons/appicon.png" />
+    <title>Online ATC stations - Flight simulation resources</title>
+</head>
 
 <p>
     <p class = "smalltext"><a href="fltsim_resource.html">&lt; Return to menu</a></p>
@@ -19,10 +17,17 @@
  * Time: 3:46 PM
  */
 
+//    set_error_handler(
+//        create_function(
+//            '$severity, $message, $file, $line',
+//            'throw new ErrorException($message, $severity, $severity, $file, $line);'
+//        )
+//    );
+
     include('atc_backend.php');
 
-    // yes, this is stupid, but it works........blame the VATEUD API -.-"
-    $online_atc_json = file_get_contents('http://api.vateud.net/online/atc/a,b,c,d,e,f,g,h,j,k,l,m,o,p,r,s,t,u,v,w,y,z.json');
+        // yes, this is stupid, but it works........blame the VATEUD API -.-"
+        $online_atc_json = file_get_contents('http://api.vateud.net/online/atc/a,b,c,d,e,f,g,h,j,k,l,m,o,p,r,s,t,u,v,w,y,z.json');
 
     /* Local JSON file for testing purposes*/
 //     $online_atc_json = file_get_contents('test.json');
@@ -31,7 +36,7 @@
 
     $num_online = 0;
 
-    $output_table = '<table border="1" cellpadding="2">';
+    $output_table = '<table border="1" cellpadding="4" class="smalltext">';
     $sup_table = '<table>';
 
     // column titles
@@ -47,6 +52,7 @@
     // future feature: have different tables for each position type
 
     $position_types = array('control','center', 'centre', 'radar', 'approach', 'departure', 'director', 'arrival', 'tower', 'ground', 'delivery', 'clearance', 'terminal');
+
 
     foreach($online_atc as $station) {
 
@@ -126,6 +132,10 @@
             $hours_online = floor($seconds_online / 3600);     //60^2 seconds in an hour
             $minutes_online = floor($seconds_online / 60) - 60 * $hours_online;
 
+            // padding zeroes
+            if ($minutes_online < 10)
+                $minutes_online = '0' . $minutes_online;
+
             // hours sometimes ends up being negative......shitty handling for this case
             if ($hours_online < 0)
                 $hours_online = $hours_online + 24;
@@ -155,7 +165,7 @@
 
 ?>
 
-<p class = smalltext><b>ATC stations currently online:</b> <?php echo $num_online ?> &nbsp;<b>[<a href = "atc.php">refresh</a>]</b></p>
+<p class = smalltext-medium><b>ATC stations currently online:</b> <?php echo $num_online ?> &nbsp;<b>[<a href = "atc.php">refresh</a>]</b></p>
 
 <?php
 
@@ -172,6 +182,34 @@
 
     //    echo '<b class = smalltext>ATC positions online:</b> ' . $num_online;
 
-    echo $sup_table;
+//    echo $sup_table;
 
 ?>
+
+<p>&nbsp;</p>
+
+<hr>
+
+<p class = smalltext-medium><b>FAQ</b></p>
+
+<p class = smalltext><b>Why isn't the callsign showing?</b></p>
+
+<p class = smalltext>
+    The callsign is pulled from the controller's information (also known as the ATIS message).
+    If the controller does not provide any, then there is nothing to pull from.
+    As well, given the large number of ways that controllers specify their callsign, it's difficult to detect every single possibility out there.
+    Therefore, even if it's provided by the controller, it might not be displayed above.
+</p>
+
+<p class = smalltext><b>Why am I seeing warnings at the top of the page?</b></p>
+
+<p class="smalltext">
+    Data for this table is pulled from the <a href = "http://api.vateud.net/">VATEUD API</a>.
+    It occasionally craps out and doesn't serve any data at all, which confuses <i>my</i> application.
+    If you're looking for somebody to blame, blame them for not being able to handle a large number of parameters.
+    That, or blame them for not providing an API call that returns all online ATC stations, which forces me to literally poll for online stations within every single ICAO region (hence the large number of parameters).
+</p>
+
+<hr>
+
+<p class="smalltext"><a href="#top">Return to top</a></p>

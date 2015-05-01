@@ -37,6 +37,11 @@
     $airport = $_POST['airport'];
     $metar_string = file_get_contents('http://metar.vatsim.net/metar.php?id=' . $airport);
 
+
+    $pressure_setting = '';
+    preg_match("/[AQ]\d\d\d\d/", $metar_string, $pressure_setting);
+    $pressure_setting = implode($pressure_setting);
+
     // alternate data source, with no restrictions (NOAA): http://weather.noaa.gov/pub/data/observations/metar/stations/[ICAO].TXT
 
     // invalid airport code
@@ -81,9 +86,14 @@
 
     // inches of mercury, or QNH?
     $press_type;
-    if (is_north_american($airport))
+    if ($pressure_setting[0] === 'A')
         $press_type = 'inHg';
-    else $press_type = 'QNH';
+    else if($pressure_setting[0] === 'Q')
+        $press_type = 'hPa';
+    $pressure_setting = substr($pressure_setting, 1);
+
+    if ($press_type === 'inHg')
+        $pressure_setting = substr_replace($pressure_setting, '.', 2, 0);
 
     $units;
     if (is_metric($airport))
@@ -99,12 +109,12 @@
 <table style="width:100%" class = content>
     <tr>
         <td><b>Issued</b></td>
-        <td><b>Pressure</b></td>
+        <td><b>Pressure setting</b></td>
         <td><b>Winds</b></td>
     </tr>
     <tr>
         <td><?php echo $issue_time; ?></td>
-        <td><?php echo $press_type; ?></td>
+        <td><?php echo $pressure_setting . ' ' . $press_type; ?></td>
         <td><?php echo $winds ?></td>
     </tr>
 </table>

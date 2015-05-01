@@ -22,6 +22,8 @@ If the controller does not provide any information about his/her station, does n
 
 Allows the user to download a pre-generated OFP (exported to PDF by another program, such as PFPX or simBrief) to the server.
 
-###metar.php
+###wx.php
 
 A simple METAR tool that displays VATSIM airport weather information at a glance.
+
+*Disclaimer: VATSIM weather may differ from real world weather!*
